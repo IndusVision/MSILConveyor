@@ -25,7 +25,41 @@ SECRET_KEY = 'django-insecure-z&(ij(m4s7jj+!az@q(z#2fdy$+vkzz3nui@(1m3)x7xt(__qs
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["*"]
+
+CORS_ALLOWED_ORIGINS = [
+    "http://127.0.0.1:4200",  # Angular frontend
+    "http://localhost:4200",
+    "http://localhost:8000",  # Django API (if needed)
+    "https://4x86tw12-8000.inc1.devtunnels.ms",
+    "http://localhost:5173"
+]
+
+# Optional: Only allow specific HTTP methods
+CORS_ALLOW_METHODS = [
+    "GET",
+    "POST",
+    "PUT",
+    "PATCH",
+    "DELETE",
+]
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^https:\/\/[a-z0-9\-]+\.inc1\.devtunnels\.ms$",
+]
+
+
+# Optional: Only allow certain headers
+CORS_ALLOW_HEADERS = [
+    "accept",
+    "authorization",
+    "content-type",
+    "x-csrftoken",
+]
+
+# Allow credentials (cookies, auth headers)
+CORS_ALLOW_CREDENTIALS = True
+
+# Don't allow all origins in production
+CORS_ALLOW_ALL_ORIGINS = False
 
 
 # Application definition
@@ -62,7 +96,7 @@ ROOT_URLCONF = 'MSILConveyor.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR/'template'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

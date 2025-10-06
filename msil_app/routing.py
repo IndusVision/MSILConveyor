@@ -1,9 +1,9 @@
 from django.urls import re_path
-from .consumers import ReportsConsumer,StartConsumer,OverviewConsumer
+from .consumers import ReportsConsumer,StartConsumer,OverviewConsumer,CameraStreamConsumer
 
 websocket_urlpatterns = [
     re_path(r"ws/reports/$", ReportsConsumer.as_asgi()),
     re_path(r"ws/start/$", StartConsumer.as_asgi()),
     re_path(r"ws/overview/$", OverviewConsumer.as_asgi()),
-
+    re_path(r'ws/camera-streaming/$',CameraStreamConsumer.as_asgi())
 ]
