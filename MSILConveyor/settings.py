@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
-
+import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -31,7 +31,8 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:4200",
     "http://localhost:8000",  # Django API (if needed)
     "https://4x86tw12-8000.inc1.devtunnels.ms",
-    "http://localhost:5173"
+    "http://localhost:5173",
+    "http://127.0.0.1:8000"
 ]
 
 # Optional: Only allow specific HTTP methods
@@ -96,7 +97,10 @@ ROOT_URLCONF = 'MSILConveyor.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR/'template'],
+        'DIRS': [
+            os.path.join(BASE_DIR, 'frontend', 'dist'),  # Add this path where your index.html is located
+            os.path.join(BASE_DIR, 'template'),       # Keep your original templates path
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -161,10 +165,15 @@ USE_I18N = True
 USE_TZ = True
 
 
+
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'frontend', 'dist', 'assets')]
+STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
