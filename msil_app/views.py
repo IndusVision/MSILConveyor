@@ -48,15 +48,18 @@ class ReportsViewSet(viewsets.ViewSet):
 
         # Latest 10 records for reports WebSocket
         latest_records = Reports.objects.order_by('-id')[:10]
+        latest_records = reversed(latest_records)  # newest first
+
         reports_list = [
             {
                 "id": r.id,
                 "recorded_date_time": r.recorded_date_time,
                 "order_number": r.order_number,
                 "clp_number": r.clp_number,
-                "status": "OK" if r.status else "NOK"  # ✅ Translate status to OK/NOK
+                "status": "OK" if r.status else "NOK"
             } for r in latest_records
         ]
+
         expected_count_obj = ExpectedCount.objects.order_by('-id').first()
         expected_count = expected_count_obj.expected_count if expected_count_obj else 0
         # Broadcast latest 10 records
