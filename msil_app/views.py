@@ -14,7 +14,7 @@ from concurrent.futures import ThreadPoolExecutor
 class ReportsViewSet(viewsets.ViewSet):
     @swagger_auto_schema(
         operation_summary="Create Report",
-        operation_description="Creates a new report entry. If a record exists with same order_number and clp_number, the new record will have status=False. Sends latest 10 records to reports WebSocket and daily overview to overview WebSocket.",
+        operation_description="Creates a new report entry. If a record exists with same order_number and clp_number, or either value is 0/null, the new record will have status=False (NOK). Sends latest 10 records to reports WebSocket and daily overview to overview WebSocket.",
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             properties={
@@ -34,9 +34,20 @@ class ReportsViewSet(viewsets.ViewSet):
         if None in [recorded_date_time, order_number, clp_number]:
             return Response({"error": "Missing fields"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Check if record with same order_number + clp_number exists
-        exists = Reports.objects.filter(order_number=order_number, clp_number=clp_number).exists()
-        status_value = False if exists else True
+        # Convert to int safely
+        try:
+            order_number = int(order_number)
+            clp_number = int(clp_number)
+        except (TypeError, ValueError):
+            return Response({"error": "Invalid order_number or clp_number"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # ✅ Check if either order_number or clp_number is 0 or null-like
+        if order_number == 0 or clp_number == 0:
+            status_value = False
+        else:
+            # Check if record with same order_number + clp_number exists
+            exists = Reports.objects.filter(order_number=order_number, clp_number=clp_number).exists()
+            status_value = False if exists else True
 
         # Create new record
         report = Reports.objects.create(
@@ -62,6 +73,7 @@ class ReportsViewSet(viewsets.ViewSet):
 
         expected_count_obj = ExpectedCount.objects.order_by('-id').first()
         expected_count = expected_count_obj.expected_count if expected_count_obj else 0
+
         # Broadcast latest 10 records
         channel_layer = get_channel_layer()
         async_to_sync(channel_layer.group_send)(
@@ -91,7 +103,7 @@ class ReportsViewSet(viewsets.ViewSet):
             "not_ok_count": not_ok_count,
             "latest_clp_number": latest_clp_number,
             "latest_order_number": latest_order_number,
-            'expected_count':expected_count
+            'expected_count': expected_count
         }
 
         # Broadcast daily overview
